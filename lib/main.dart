@@ -68,10 +68,9 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         break;
       }
-              stdout.write('\n');
-
     }
-    print('End of methof');
+      stdout.write('\n');
+    print('End of method');
   }
 
   @override

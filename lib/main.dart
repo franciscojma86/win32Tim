@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'dart:io';
+import 'dart:typed_data';
 
 const NULL = 0;
 
@@ -14,9 +14,9 @@ const MAX_PATH = 260;
 //   LPWSTR pszPath
 // );
 typedef shGetFolderPathNative = Int32 Function(Int64 hwnd, Int32 csidl,
-    Int64 hToken, Int32 dwFlags, Pointer<Utf16> pszPath);
+    Int64 hToken, Int32 dwFlags, Pointer<Uint16> pszPath);
 typedef shGetFolderPathDart = int Function(
-    int hwnd, int csidl, int hToken, int dwFlags, Pointer<Utf16> pszPath);
+    int hwnd, int csidl, int hToken, int dwFlags, Pointer<Uint16> pszPath);
 final shell32 = DynamicLibrary.open('shell32.dll');
 
 final SHGetFolderPath =
@@ -55,22 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // Find user document folder
     final CSIDL_PERSONAL = 0x0005;
     final CSIDL_FLAG_CREATE = 0x8000;
-    var path = allocate<Utf16>(count: MAX_PATH);
+    Pointer<Uint16> path = allocate<Uint16>(count: MAX_PATH);
     final result = SHGetFolderPath(
         NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, path);
     print(result.toString());
-
-    final ptr = Pointer<Uint16>.fromAddress(path.address);
-    for (var v = 0; v < MAX_PATH; v++) {
-      final charCode = ptr.elementAt(v).value;
-      if (charCode != 0) {
-        stdout.write(String.fromCharCode(charCode));
-      } else {
-        break;
-      }
-    }
-      stdout.write('\n');
-    print('End of method');
+    Uint16List pathData = path.asTypedList(MAX_PATH);
+    print(String.fromCharCodes(
+        path.asTypedList(MAX_PATH), 0, pathData.indexOf(0)));
   }
 
   @override
